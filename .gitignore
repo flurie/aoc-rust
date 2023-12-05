@@ -21,3 +21,14 @@ data/inputs/*
 !data/inputs/.keep
 data/puzzles/*
 !data/puzzles/.keep
+
+# Devenv
+.devenv*
+devenv.local.nix
+
+# direnv
+.direnv
+
+# pre-commit
+.pre-commit-config.yaml
+
