@@ -21,6 +21,30 @@ impl FromStr for Seeds {
     }
 }
 
+struct SeedPairs(Vec<u64>);
+
+impl FromStr for SeedPairs {
+    type Err = ParseSeedsError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let seeds: Vec<u64> = s
+            .strip_prefix("seeds: ")
+            .ok_or(ParseSeedsError)?
+            .split(" ")
+            .map(|s| s.parse().ok().unwrap())
+            .collect::<Vec<_>>();
+        let pairs = seeds
+            .chunks_exact(2)
+            .map(|c| match c.len() {
+                2 => (c[0]..c[0] + c[1]).collect::<Vec<_>>(),
+                _ => vec![],
+            })
+            .collect::<Vec<_>>()
+            .concat();
+        Ok(SeedPairs(pairs))
+    }
+}
+
 struct ParseTranslatorError;
 
 #[derive(Debug)]
@@ -113,8 +137,46 @@ pub fn part_one(input: &str) -> Option<u64> {
     Some(soln)
 }
 
-pub fn part_two(_input: &str) -> Option<u64> {
-    None
+pub fn part_two(input: &str) -> Option<u64> {
+    let (seeds, s2so, so2f, f2w, w2li, li2t, t2h, h2lo) =
+        match input.split("\n\n").collect::<Vec<_>>()[..] {
+            [a, b, c, d, e, f, g, h] => (
+                SeedPairs::from_str(a).ok().unwrap(),
+                SeedToSoil::from_str(b).ok().unwrap(),
+                SoilToFertilizer::from_str(c).ok().unwrap(),
+                FertilizerToWater::from_str(d).ok().unwrap(),
+                WaterToLight::from_str(e).ok().unwrap(),
+                LightToTemperature::from_str(f).ok().unwrap(),
+                TemperatureToHumidity::from_str(g).ok().unwrap(),
+                HumidityToLocation::from_str(h).ok().unwrap(),
+            ),
+            _ => (
+                SeedPairs::from_str("").ok().unwrap(),
+                Translator::from_str("").ok().unwrap(),
+                Translator::from_str("").ok().unwrap(),
+                Translator::from_str("").ok().unwrap(),
+                Translator::from_str("").ok().unwrap(),
+                Translator::from_str("").ok().unwrap(),
+                Translator::from_str("").ok().unwrap(),
+                Translator::from_str("").ok().unwrap(),
+            ),
+        };
+    let soln = seeds
+        .0
+        .iter()
+        .map(|s| {
+            let so = s2so.translate(*s);
+            let f = so2f.translate(so);
+            let w = f2w.translate(f);
+            let li = w2li.translate(w);
+            let t = li2t.translate(li);
+            let h = t2h.translate(t);
+            let lo = h2lo.translate(h);
+            lo
+        })
+        .min()
+        .unwrap_or(0);
+    Some(soln)
 }
 
 #[cfg(test)]
@@ -130,6 +192,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(46));
     }
 }
