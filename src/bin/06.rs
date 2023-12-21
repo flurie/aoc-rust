@@ -6,6 +6,21 @@ advent_of_code::solution!(6);
 // time is first line
 struct Val(Vec<u64>);
 
+impl Val {
+    fn collapse(&self) -> Val {
+        let val = self
+            .0
+            .iter()
+            .map(|v| v.to_string())
+            .collect::<Vec<_>>()
+            .concat()
+            .parse::<u64>()
+            .ok()
+            .unwrap();
+        Val(vec![val])
+    }
+}
+
 struct ParseValError;
 
 impl FromStr for Val {
@@ -53,8 +68,8 @@ pub fn part_one(input: &str) -> Option<u64> {
 
 pub fn part_two(input: &str) -> Option<u64> {
     if let [time_s, distance_s] = input.lines().collect::<Vec<_>>()[..] {
-        let time = Val::from_str(time_s).ok().unwrap().0;
-        let distance = Val::from_str(distance_s).ok().unwrap().0;
+        let time = Val::from_str(time_s).ok().unwrap().collapse().0;
+        let distance = Val::from_str(distance_s).ok().unwrap().collapse().0;
         let t_d = zip(time, distance);
         let soln = t_d
             .map(|(t, d)| {

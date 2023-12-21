@@ -197,7 +197,9 @@ impl Schematic {
 
     fn sym_neighbors(&self, x: u32, y: u32) -> bool {
         let neighbors = self.neighbors(x, y);
-        neighbors.into_iter().any(|n| n.kind == Kind::Symbol)
+        neighbors
+            .into_iter()
+            .any(|n| n.kind == Kind::Symbol || n.kind == Kind::Gear)
     }
 }
 
